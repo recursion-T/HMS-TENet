@@ -142,11 +142,17 @@ class MutilModal(nn.Module):
                 nn.Linear(256, 1),
                 nn.Sigmoid()
             )
-    def forward(self,e_data,o_data):
-        e_data=self.eeg_modal(e_data)
-        o_data=o_data.unsqueeze(1).repeat(1,3,1,1)
+    def split_band_fusion(self,e_data,o_data):
+        o_data = o_data.unsqueeze(1).repeat(1, 3, 1, 1)
         e_data = self.expand(e_data)
         x = torch.cat((e_data, o_data), dim=2)
+        return x
+    def forward(self,e_data,o_data):
+        e_data=self.eeg_modal(e_data)
+
+        o_data=o_data.unsqueeze(1).repeat(1,3,1,1)
+        e_data = self.expand(e_data)
+        x=self.split_band_fusion(e_data,o_data)
         x=self.psp(x)
         x=self.scs(x)
         x=self.res_net(x)
